@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { getAllDocuments } from '../../../helpers/db-utils';
 
 export default async function handler(req, res) {
   const eventId = req.query.eventId;
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
     const documents = await db
       .collection('comments')
       .find()
-      .sort({ _id: -1 })
+      .sort({ _id: -1 }, { eventId: eventId })
       .toArray();
     client.close();
 
