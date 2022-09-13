@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { connectDatabase, insertDocument } from '../../helpers/db-util';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -6,12 +6,24 @@ export default async function handler(req, res) {
 
     if (!userEmail || !userEmail.includes('@')) {
       res.status(422).send({ message: 'Invalid email address.' });
+      return;
     }
 
-    const client = await MongoClient.connect(process.env.MONGO_DB_URI);
-    const db = client.db();
-    await db.collection('newsletter').insertOne({ email: userEmail });
-    client.close();
+    let client;
+
+    try {
+      client = await connectDatabase();
+    } catch (error) {
+      res.status(500).json({ message: 'Connecting to the database failed!' });
+      return;
+    }
+
+    try {
+      await insertDocument(client, 'newsletter', { email: userEmail });
+    } catch (error) {
+      res.status(500).json({ message: 'Inserting data failed!' });
+      return;
+    }
 
     res.status(201).send({ message: 'Signed up!' });
   }
