@@ -2,11 +2,11 @@ import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
   const eventId = req.query.eventId;
+  const client = await MongoClient.connect(process.env.MONGO_DB_URI);
 
   if (req.method === 'POST') {
     const { email, name, text } = req.body;
 
-    const client = await MongoClient.connect(process.env.MONGO_DB_URI);
     const db = client.db();
 
     if (
@@ -34,11 +34,14 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const dummyList = [
-      { id: 'c1', name: 'Max', text: 'A first comment!' },
-      { id: 'c2', name: 'Manuel', text: 'A second comment!' },
-    ];
+    const db = client.db();
+    const documents = await db
+      .collection('comments')
+      .find()
+      .sort({ _id: -1 })
+      .toArray();
+    client.close();
 
-    res.status(200).json({ comments: dummyList });
+    res.status(200).json({ comments: documents });
   }
 }
