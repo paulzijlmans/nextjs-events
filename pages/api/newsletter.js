@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
     const client = await MongoClient.connect(process.env.MONGO_DB_URI);
     const db = client.db();
-    await db.collection('emails').insertOne({ email: userEmail });
+    await db.collection('newsletter').insertOne({ email: userEmail });
     client.close();
 
     res.status(201).send({ message: 'Signed up!' });

@@ -1,8 +1,13 @@
-export default function handler(req, res) {
+import { MongoClient } from 'mongodb';
+
+export default async function handler(req, res) {
   const eventId = req.query.eventId;
 
   if (req.method === 'POST') {
     const { email, name, text } = req.body;
+
+    const client = await MongoClient.connect(process.env.MONGO_DB_URI);
+    const db = client.db();
 
     if (
       !email.includes('@') ||
@@ -11,18 +16,21 @@ export default function handler(req, res) {
       !text ||
       text.trim() == ''
     ) {
-      res.status(422).send({ message: 'Invalid input' });
+      res.status(422).json({ message: 'Invalid input' });
     }
 
     const newComment = {
-      id: new Date().toISOString(),
       email,
       name,
       text,
+      eventId,
     };
-    console.log(newComment);
 
-    res.status(201).send({ message: 'Added comment', comment: newComment });
+    const result = await db.collection('comments').insertOne(newComment);
+    client.close();
+
+    newComment.id = result.insertedId;
+    res.status(201).json({ message: 'Added comment', comment: newComment });
   }
 
   if (req.method === 'GET') {
