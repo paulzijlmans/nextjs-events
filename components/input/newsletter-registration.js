@@ -28,16 +28,15 @@ function NewsletterRegistration() {
 
       if (response.ok) {
         await response.json();
+        showNotification({
+          title: 'Success!',
+          message: 'Successfully registered for newsletter.',
+          status: 'success',
+        });
       } else {
         const data = await response.json();
         throw new Error(data.message || 'Something went wrong!');
       }
-      
-      showNotification({
-        title: 'Success!',
-        message: 'Successfully registered for newsletter.',
-        status: 'success',
-      });
     } catch (error) {
       showNotification({
         title: 'Error!',
